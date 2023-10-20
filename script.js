@@ -6,6 +6,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const playerXScoreDisplay = document.getElementById("playerXScore");
   const playerOScoreDisplay = document.getElementById("playerOScore");
   const gameGrid = document.getElementById("gameGrid");
+  const currentPlayerName = document.getElementById("currentTurn");
 
   let gridSize = 3; // Default grid size
   let currentPlayer = "X";
@@ -47,22 +48,32 @@ document.addEventListener("DOMContentLoaded", () => {
       board[row][col] = currentPlayer;
       cell.innerText = currentPlayer;
       cell.classList.add(currentPlayer);
+      cell.style.pointerEvents = "none"; // Disable the cell for input
 
       if (checkWinner(row, col)) {
+        announceWinner(currentPlayer); // Announce the winner
         if (currentPlayer === "X") {
+          currentPlayerName.innerHTML = "X player wins";
           playerXScore++;
           playerXScoreDisplay.textContent = playerXScore;
         } else {
+          currentPlayerName.innerHTML = "O player wins";
           playerOScore++;
           playerOScoreDisplay.textContent = playerOScore;
         }
-        resetBoard();
+        gameGrid.style.pointerEvents = "none"; // Disable the entire grid
       } else {
         currentPlayer = currentPlayer === "X" ? "O" : "X";
       }
+      // Update the current player's turn
+      updatePlayerTurn();
     }
   }
 
+  function updatePlayerTurn() {
+    const playerTurnElement = document.getElementById("playerTurn");
+    playerTurnElement.textContent = currentPlayer;
+  }
   // Function to check for a winner
   // Function to check for a winner
   function checkWinner(row, col) {
@@ -129,11 +140,25 @@ document.addEventListener("DOMContentLoaded", () => {
     return false; // No winning pattern found
   }
 
+  function announceWinner(player) {
+    const announcement = document.createElement("div");
+    announcement.textContent = `Player ${player} wins!`;
+    announcement.classList.add("announcement");
+    document.body.appendChild(announcement);
+    resetBoard(); // Reset the board after announcing the winner
+  }
+
   // Function to reset the board
   function resetBoard() {
     board = [];
     currentPlayer = "X";
     gameGrid.innerHTML = "";
+    gameGrid.style.pointerEvents = "auto"; // Re-enable the grid for input
+    const announcements = document.querySelectorAll(".announcement");
+    announcements.forEach((announcement) => {
+      announcement.remove();
+    });
+    createGrid();
   }
 
   // Event listeners
