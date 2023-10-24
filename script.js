@@ -1,167 +1,80 @@
-document.addEventListener("DOMContentLoaded", () => {
-  // Constants
-  const gridSizeInput = document.getElementById("gridSize");
-  const startGameButton = document.getElementById("startGame");
-  const resetBoardButton = document.getElementById("resetBoard");
-  const playerXScoreDisplay = document.getElementById("playerXScore");
-  const playerOScoreDisplay = document.getElementById("playerOScore");
-  const gameGrid = document.getElementById("gameGrid");
-  const currentPlayerName = document.getElementById("currentTurn");
+const cells = document.querySelectorAll(".cell");
+const statusText = document.querySelector("#statusText");
+const restartBtn = document.querySelector("#restartBtn");
+const winConditions = [
+    [0, 1, 2],
+    [3, 4, 5],
+    [6, 7, 8],
+    [0, 3, 6],
+    [1, 4, 7],
+    [2, 5, 8],
+    [0, 4, 8],
+    [2, 4, 6]
+];
+let options = ["", "", "", "", "", "", "", "", ""];
+let currentPlayer = "X";
+let running = false;
 
-  let gridSize = 3; // Default grid size
-  let currentPlayer = "X";
-  let board = [];
-  let playerXScore = 0;
-  let playerOScore = 0;
+initializeGame();
 
-  // Function to initialize the game
-  function initializeGame() {
-    gridSize = parseInt(gridSizeInput.value);
-    resetBoard();
-    createGrid();
-  }
+function initializeGame(){
+    cells.forEach(cell => cell.addEventListener("click", cellClicked));
+    restartBtn.addEventListener("click", restartGame);
+    statusText.textContent = `${currentPlayer}'s turn`;
+    running = true;
+}
+function cellClicked(){
+    const cellIndex = this.getAttribute("cellIndex");
 
-  // Function to create the game grid
-  function createGrid() {
-    gameGrid.innerHTML = "";
-    gameGrid.style.gridTemplateColumns = `repeat(${gridSize}, 1fr)`;
-    for (let i = 0; i < gridSize; i++) {
-      board[i] = [];
-      for (let j = 0; j < gridSize; j++) {
-        const cell = document.createElement("div");
-        cell.className = "cell";
-        cell.dataset.row = i;
-        cell.dataset.col = j;
-        cell.addEventListener("click", handleCellClick);
-        gameGrid.appendChild(cell);
-      }
+    if(options[cellIndex] != "" || !running){
+        return;
     }
-  }
 
-  // Function to handle cell click
-  function handleCellClick(event) {
-    const cell = event.target;
-    const row = parseInt(cell.dataset.row);
-    const col = parseInt(cell.dataset.col);
+    updateCell(this, cellIndex);
+    checkWinner();
+}
+function updateCell(cell, index){
+    options[index] = currentPlayer;
+    cell.textContent = currentPlayer;
+}
+function changePlayer(){
+    currentPlayer = (currentPlayer == "X") ? "O" : "X";
+    statusText.textContent = `${currentPlayer}'s turn`;
+}
+function checkWinner(){
+    let roundWon = false;
 
-    if (!board[row][col]) {
-      board[row][col] = currentPlayer;
-      cell.innerText = currentPlayer;
-      cell.classList.add(currentPlayer);
-      cell.style.pointerEvents = "none"; // Disable the cell for input
+    for(let i = 0; i < winConditions.length; i++){
+        const condition = winConditions[i];
+        const cellA = options[condition[0]];
+        const cellB = options[condition[1]];
+        const cellC = options[condition[2]];
 
-      if (checkWinner(row, col)) {
-        announceWinner(currentPlayer); // Announce the winner
-        if (currentPlayer === "X") {
-          currentPlayerName.innerHTML = "X player wins";
-          playerXScore++;
-          playerXScoreDisplay.textContent = playerXScore;
-        } else {
-          currentPlayerName.innerHTML = "O player wins";
-          playerOScore++;
-          playerOScoreDisplay.textContent = playerOScore;
+        if(cellA == "" || cellB == "" || cellC == ""){
+            continue;
         }
-        gameGrid.style.pointerEvents = "none"; // Disable the entire grid
-      } else {
-        currentPlayer = currentPlayer === "X" ? "O" : "X";
-      }
-      // Update the current player's turn
-      updatePlayerTurn();
-    }
-  }
-
-  function updatePlayerTurn() {
-    const playerTurnElement = document.getElementById("playerTurn");
-    playerTurnElement.textContent = currentPlayer;
-  }
-  // Function to check for a winner
-  // Function to check for a winner
-  function checkWinner(row, col) {
-    const symbol = board[row][col];
-
-    // Define the winning patterns
-    const winPatterns = [
-      [
-        [0, 0],
-        [0, 1],
-        [0, 2],
-      ], // Top row
-      [
-        [1, 0],
-        [1, 1],
-        [1, 2],
-      ], // Middle row
-      [
-        [2, 0],
-        [2, 1],
-        [2, 2],
-      ], // Bottom row
-      [
-        [0, 0],
-        [1, 0],
-        [2, 0],
-      ], // Left column
-      [
-        [0, 1],
-        [1, 1],
-        [2, 1],
-      ], // Middle column
-      [
-        [0, 2],
-        [1, 2],
-        [2, 2],
-      ], // Right column
-      [
-        [0, 0],
-        [1, 1],
-        [2, 2],
-      ], // Diagonal from top-left to bottom-right
-      [
-        [0, 2],
-        [1, 1],
-        [2, 0],
-      ], // Diagonal from top-right to bottom-left
-    ];
-
-    for (const pattern of winPatterns) {
-      const [a, b] = pattern[0];
-      const [c, d] = pattern[1];
-      const [e, f] = pattern[2];
-
-      if (
-        board[a][b] === symbol &&
-        board[c][d] === symbol &&
-        board[e][f] === symbol
-      ) {
-        return true; // Found a winning pattern
-      }
+        if(cellA == cellB && cellB == cellC){
+            roundWon = true;
+            break;
+        }
     }
 
-    return false; // No winning pattern found
-  }
-
-  function announceWinner(player) {
-    const announcement = document.createElement("div");
-    announcement.textContent = `Player ${player} wins!`;
-    announcement.classList.add("announcement");
-    document.body.appendChild(announcement);
-    resetBoard(); // Reset the board after announcing the winner
-  }
-
-  // Function to reset the board
-  function resetBoard() {
-    board = [];
+    if(roundWon){
+        statusText.textContent = `${currentPlayer} wins!`;
+        running = false;
+    }
+    else if(!options.includes("")){
+        statusText.textContent = `Draw!`;
+        running = false;
+    }
+    else{
+        changePlayer();
+    }
+}
+function restartGame(){
     currentPlayer = "X";
-    gameGrid.innerHTML = "";
-    gameGrid.style.pointerEvents = "auto"; // Re-enable the grid for input
-    const announcements = document.querySelectorAll(".announcement");
-    announcements.forEach((announcement) => {
-      announcement.remove();
-    });
-    createGrid();
-  }
-
-  // Event listeners
-  startGameButton.addEventListener("click", initializeGame);
-  resetBoardButton.addEventListener("click", resetBoard);
-});
+    options = ["", "", "", "", "", "", "", "", ""];
+    statusText.textContent = `${currentPlayer}'s turn`;
+    cells.forEach(cell => cell.textContent = "");
+    running = true;
+}
