@@ -23,15 +23,16 @@ function initializeGame(){
     statusText.textContent = `${currentPlayer}'s turn`;
     running = true;
 }
-function cellClicked(){
+function cellClicked() {
     const cellIndex = this.getAttribute("cellIndex");
 
-    if(options[cellIndex] != "" || !running){
+    if (options[cellIndex] != "" || !running) {
         return;
     }
 
     updateCell(this, cellIndex);
     checkWinner();
+    computerMove(); // Call the computer move after each human move
 }
 function updateCell(cell, index){
     options[index] = currentPlayer;
@@ -78,3 +79,27 @@ function restartGame(){
     cells.forEach(cell => cell.textContent = "");
     running = true;
 }
+
+function computerMove() {
+    if (running && currentPlayer === 'O') {
+        let emptyCells = options.reduce((acc, option, index) => {
+            if (option === '') {
+                acc.push(index);
+            }
+            return acc;
+        }, []);
+
+        if (emptyCells.length > 0) {
+            const randomIndex = Math.floor(Math.random() * emptyCells.length);
+            const computerCellIndex = emptyCells[randomIndex];
+            const computerCell = cells[computerCellIndex];
+            
+            setTimeout(() => {
+                updateCell(computerCell, computerCellIndex);
+                checkWinner();
+            }, 1000); // Delay for 1 second to make the computer's move visible
+        }
+    }
+}
+
+// Modify your existing cellClicked function to call computerMove after each human move
