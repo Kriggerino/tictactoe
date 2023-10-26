@@ -20,7 +20,7 @@ initializeGame();
 function initializeGame(){
     cells.forEach(cell => cell.addEventListener("click", cellClicked));
     restartBtn.addEventListener("click", restartGame);
-    statusText.textContent = `${currentPlayer}'s turn`;
+    statusText.textContent = `Player's turn`;
     running = true;
 }
 function cellClicked() {
@@ -40,7 +40,12 @@ function updateCell(cell, index){
 }
 function changePlayer(){
     currentPlayer = (currentPlayer == "X") ? "O" : "X";
-    statusText.textContent = `${currentPlayer}'s turn`;
+    if (currentPlayer == "X"){
+        statusText.textContent = `Player's turn`;
+    } else if (currentPlayer == "O"){
+        statusText.textContent = `Computer's turn`;
+    }
+    
 }
 function checkWinner(){
     let roundWon = false;
