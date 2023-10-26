@@ -102,9 +102,9 @@ function computerMove() {
             setTimeout(() => {
                 updateCell(computerCell, computerCellIndex);
                 checkWinner();
-            }, 1000); // Delay for 1 second to make the computer's move visible
+            }, 500); // Delay for 1 second to make the computer's move visible
         }
     }
 }
 
-// Modify your existing cellClicked function to call computerMove after each human move
+
